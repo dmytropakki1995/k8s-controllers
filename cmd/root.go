@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +25,13 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Welcome to MyCLI")
+		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+		log.Info().Msg("This is an info log")
+		log.Debug().Msg("This is a debug log")
+		log.Trace().Msg("This is a trace log")
+		log.Warn().Msg("This is a warn log")
+		log.Error().Msg("This is an error log")
+		fmt.Println("Welcome to k8s-controller-tutorial CLI!")
 	},
 }
 
