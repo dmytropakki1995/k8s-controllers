@@ -11,17 +11,19 @@ import (
 )
 
 var logLevel string
+var appVersion = "dev"
 
 var rootCmd = &cobra.Command{
 	Use:   "k8s-controller-tutorial",
-	Short: "A brief description of your application",
+	Short: "A brief description of your application (version: " + appVersion + ")",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
 
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.
-`,
+
+Version: ` + appVersion + "\n",
 	Run: func(cmd *cobra.Command, args []string) {
 		level := parseLogLevel(logLevel)
 		configureLogger(level)
@@ -92,5 +94,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "error", "Set log level: trace, debug, info, warn, error")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "Set log level: trace, debug, info, warn, error")
 }
