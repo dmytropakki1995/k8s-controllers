@@ -92,5 +92,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "error", "Set log level: trace, debug, info, warn, error")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "Set log level: trace, debug, info, warn, error")
 }
