@@ -5,12 +5,22 @@ import (
 	"os"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var logLevel string
+var env string
+
+// Valid levels for PROD environment
+var validLevels = map[string]bool{
+	"info":  true,
+	"warn":  true,
+	"error": true,
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "k8s-controller-tutorial",
@@ -30,7 +40,6 @@ to quickly create a Cobra application.
 		log.Trace().Msg("This is a trace log")
 		log.Warn().Msg("This is a warn log")
 		log.Error().Msg("This is an error log")
-		fmt.Println("Welcome to k8s-controller-tutorial CLI!")
 	},
 }
 
@@ -92,5 +101,22 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "error", "Set log level: trace, debug, info, warn, error")
+	if err := godotenv.Load(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	viper.BindEnv("default_log_level")
+	viper.BindEnv("env")
+
+	// Get .env value
+	defaultLogLevel := viper.GetString("default_log_level")
+	env = viper.GetString("env")
+
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", defaultLogLevel, "Set log level: trace, debug, info, warn, error")
+
+	if env == "prod" {
+		if !validLevels[logLevel] {
+			fmt.Fprintln(os.Stderr, "Invalid log level for PROD environment.")
+			os.Exit(1)
+		}
+	}
 }
