@@ -9,6 +9,8 @@ kubebuilder/bin/kubectl config set-context test-context --cluster=test-env --use
 kubebuilder/bin/kubectl config use-context test-context
 
 
+
+
 echo "Starting etcd..."
 kubebuilder/bin/etcd \
     --advertise-client-urls http://$HOST_IP:2379 \
