@@ -1,27 +1,37 @@
-# **FastHTTP Server Command**
+# Kubernetes Controller (Golang)
 
-   - Added a new `server` command using [fasthttp](https://github.com/valyala/fasthttp).
-   - The command starts a FastHTTP server with a configurable port (default: 8080).
-   - Supports the `--log-level` flag for controlling log verbosity.
-   - Uses zerolog for logging.
+This simple Go program uses the official Kubernetes Go client (`client-go`) to create and delete a Deployment resource by reading a manifest file (`deployment.yaml`).
 
-   **Usage:**
-   ```sh
-   git switch feature/step4-fasthttp-server
 
-   go run main.go server --port 8080 --log-level debug
-   ```
+## 🧰 Requirements
 
-   **What it does:**
-   - Starts a FastHTTP server on the specified port.
-   - Responds with "Hello from FastHTTP!" to any request.
-   - Respects the log level set by the `--log-level` flag.
+- Go 1.24 or later
+- Access to a Kubernetes cluster Control Plane
+- A valid `kubeconfig` file (default: `~/.kube/config`)
+- A Deployment manifest file in YAML format
 
-## Project Structure
 
-- `cmd/` — Contains your CLI commands.
-- `main.go` — Entry point for your application.
-- `server.go` - fasthttp server
+
+## 🛠 Installation and Usage
+```sh
+git switch feature/step6-list-deployments
+go mod init && go mod tidy
+
+# Create deployment
+go run main.go --kubeconfig ./config --manifest-path ./deployment.yaml create
+
+# Delete deployment
+go run main.go --kubeconfig ./config --deployment my-deployment delete
+```
+
+**What it does:**
+- Read a Kubernetes Deployment manifest from a YAML file
+- Create the Deployment in your cluster using the Kubernetes API
+- Supports kubeconfig from `~/.kube/config`
+- Delete deployment with the specified name
+
+
+
 
 ## License
 
