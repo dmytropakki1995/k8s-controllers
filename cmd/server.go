@@ -31,7 +31,6 @@ var serverCmd = &cobra.Command{
 		addr := fmt.Sprintf(":%s", serverPort)
 		if !validLevels[logLevel] {
 			log.Warn().Msgf("Incorrect --log-level=%s specified. The default 'info' level will be used.", logLevel)
-			// os.Exit(1)
 		}
 		log.Info().Msgf("Starting FastHTTP server on port %s with '%s' logging level", addr, logLevel)
 		if err := fasthttp.ListenAndServe(addr, handler); err != nil {
