@@ -5,20 +5,15 @@ import (
 	"os"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var logLevel string
 var env string
-
-// Valid levels for PROD environment
-var validLevels = map[string]bool{
-	"info":  true,
-	"warn":  true,
-	"error": true,
-}
 
 var rootCmd = &cobra.Command{
 	Use:   "k8s-controller-tutorial",
@@ -99,5 +94,10 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "Set log level: trace, debug, info, warn, error")
+	if err := godotenv.Load(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+
+	viper.BindEnv("default_log_level")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", viper.GetString("default_log_level"), "Set log level: trace, debug, info, warn, error")
 }

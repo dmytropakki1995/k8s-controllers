@@ -47,11 +47,11 @@ func init() {
 	}
 
 	viper.BindEnv("port")
-	viper.BindEnv("log_level")
+	viper.BindEnv("default_log_level")
 
 	rootCmd.AddCommand(serverCmd)
 	serverCmd.Flags().StringVar(&serverPort, "port", viper.GetString("port"), "Port to run the server on")
-	serverCmd.Flags().StringVar(&logLevel, "log-level", viper.GetString("log_level"), "Set log level for FastHTTP server: trace, debug, info, warn, error")
+	serverCmd.Flags().StringVar(&logLevel, "log-level", viper.GetString("default_log_level"), "Set log level for FastHTTP server: trace, debug, info, warn, error")
 }
 
 func loggingRequest(request fasthttp.RequestHandler) fasthttp.RequestHandler {
