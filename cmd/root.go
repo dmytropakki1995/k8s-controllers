@@ -11,6 +11,14 @@ import (
 )
 
 var logLevel string
+var env string
+
+// Valid levels for PROD environment
+var validLevels = map[string]bool{
+	"info":  true,
+	"warn":  true,
+	"error": true,
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "k8s-controller-tutorial",
@@ -30,7 +38,6 @@ to quickly create a Cobra application.
 		log.Trace().Msg("This is a trace log")
 		log.Warn().Msg("This is a warn log")
 		log.Error().Msg("This is an error log")
-		fmt.Println("Welcome to k8s-controller-tutorial CLI!")
 	},
 }
 
