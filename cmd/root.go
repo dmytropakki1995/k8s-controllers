@@ -15,13 +15,6 @@ import (
 var logLevel string
 var env string
 
-// Valid levels for PROD environment
-var validLevels = map[string]bool{
-	"info":  true,
-	"warn":  true,
-	"error": true,
-}
-
 var rootCmd = &cobra.Command{
 	Use:   "k8s-controller-tutorial",
 	Short: "A brief description of your application",
@@ -104,19 +97,7 @@ func init() {
 	if err := godotenv.Load(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
+
 	viper.BindEnv("default_log_level")
-	viper.BindEnv("env")
-
-	// Get .env value
-	defaultLogLevel := viper.GetString("default_log_level")
-	env = viper.GetString("env")
-
-	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", defaultLogLevel, "Set log level: trace, debug, info, warn, error")
-
-	if env == "prod" {
-		if !validLevels[logLevel] {
-			fmt.Fprintln(os.Stderr, "Invalid log level for PROD environment.")
-			os.Exit(1)
-		}
-	}
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", viper.GetString("default_log_level"), "Set log level: trace, debug, info, warn, error")
 }
