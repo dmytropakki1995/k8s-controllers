@@ -16,6 +16,7 @@ spec:
         app: debug-task-app
     spec:
       containers:
+        
         - name: nginx
           image: nginxinc/nginx-unprivileged:latest
           ports:
@@ -23,31 +24,36 @@ spec:
           volumeMounts:
             - name: nginx-config
               mountPath: /etc/nginx/conf.d
-            - name: debug-task-pvc
-              mountPath: /uploads
+            - name: debug-task
+              mountPath: /uploads # the path of the files in the app is in /uploads/ instead of /app/uploads/
           livenessProbe:
             httpGet:
-              path: /
+              path: /health
               port: 8081
             initialDelaySeconds: 10
             periodSeconds: 5
+        
         - name: app
-          image: alpacked/test-task
+          image: alpacked/test-task # Better to use the versioning system instaed of 'latest' tag.
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
           volumeMounts:
             - name: app-storage
               mountPath: /app/data
-            - name: debug-task-pvc
-              mountPath: /app/uploads
+            - name: debug-task
+              mountPath: /uploads
+
       volumes:
         - name: nginx-config
           configMap:
             name: nginx-config
-        - name: debug-task-pvc
+        - name: debug-task
           persistentVolumeClaim:
             claimName: debug-task-pvc
+        - name: app-storage
+          persistentVolumeClaim:
+            claimName: app-storage-pvc
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -59,14 +65,23 @@ data:
   default.conf: |
     server {
         listen 8081;
- 
+
+        # It is beeter to implemet /health as a separate endpoint
+        location /health {
+            access_log off;   # turn off logs to avoid spam
+            
+            proxy_pass http://127.0.0.1:8080/health;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
         location / {
-            proxy_pass http://app:8080;
+            proxy_pass http://127.0.0.1:8080;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
- 
+
         location /uploads {
             return 200;
             root /uploads;
@@ -79,7 +94,7 @@ metadata:
   name: debug-task-service
 spec:
   selector:
-    app: debug-task-service
+    app: debug-task-app
   ports:
     - protocol: TCP
       port: 8081
@@ -95,4 +110,15 @@ spec:
   resources:
     requests:
       storage: 1Gi
- 
+---
+# Add PVC for app-storage data in /app/data/
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-storage-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
