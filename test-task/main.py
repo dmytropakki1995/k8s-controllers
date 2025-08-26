@@ -5,7 +5,7 @@ import sqlite3
 import time
 
 app = Flask(__name__)
-UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "./uploads") # "/app/uploads") # the default path os '/app/uploads' instead of /'uploads'
+UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "/app/uploads") # the default path is '/app/uploads' instead of /'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 db_path = "./app/data/uploads.db"
