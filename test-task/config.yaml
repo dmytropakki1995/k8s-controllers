@@ -25,7 +25,7 @@ spec:
             - name: nginx-config
               mountPath: /etc/nginx/conf.d
             - name: debug-task
-              mountPath: /uploads # the path of the files in the app is in /uploads/ instead of /app/uploads/
+              mountPath: /app/uploads # the path of the files in the app is in /uploads/ instead of /app/uploads/
           livenessProbe:
             httpGet:
               path: /health
@@ -34,15 +34,22 @@ spec:
             periodSeconds: 5
         
         - name: app
-          image: alpacked/test-task # Better to use the versioning system instaed of 'latest' tag.
-          imagePullPolicy: Always
+          
+          # Image has been build under amd64
+          # Better to use the versioning system instaed of 'latest' tag. 
+          # image: alpacked/test-task 
+          # imagePullPolicy: Always
+          
+          image: alpacked/test-task-build:latest
+          imagePullPolicy: IfNotPresent
+
           ports:
             - containerPort: 8080
           volumeMounts:
             - name: app-storage
               mountPath: /app/data
             - name: debug-task
-              mountPath: /uploads
+              mountPath: /app/uploads
 
       volumes:
         - name: nginx-config
@@ -82,10 +89,10 @@ data:
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
 
-        location /uploads {
-            return 200;
-            root /uploads;
-        }
+        # location /uploads {
+        #     return 200;
+        #     root /uploads;
+        # }
     }
 ---
 apiVersion: v1
@@ -99,6 +106,32 @@ spec:
     - protocol: TCP
       port: 8081
       targetPort: 8081
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: debug-task-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /mnt/uploads # hostPath could not be used in the cluster has more then one node.
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: app-storage-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /mnt/data # hostPath could not be used in the cluster has more then one node.
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

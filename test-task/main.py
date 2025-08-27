@@ -28,6 +28,7 @@ def init_db():
 def health():
     return 'OK', 200
 
+# Route to get the uploaded file
 @app.route('/uploads/<filename>')
 def get_file(filename):
     file_path = os.path.join(UPLOAD_FOLDER, filename)
@@ -62,7 +63,7 @@ def upload_file():
     # This method should not use init_db() every time when the file is uploaded. It fails if this method is called more than once.
     # init_db() is better to use in a separate method or even a container like a migration container.
     # Store metadata in the database
-    init_db()
+    # init_db()
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -74,4 +75,6 @@ def upload_file():
     return f'File {file.filename} uploaded successfully', 200
 
 if __name__ == "__main__":
+    init_db() # DB is initialized once during the first run of an application
+    
     app.run(host="0.0.0.0", port=8080)
