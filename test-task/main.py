@@ -50,7 +50,10 @@ def upload_file():
 
     # Determine file path and save it
     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(file_path)
+    if os.path.isfile(file_path):
+        return {"Error": f"File {file.filename} already exist in {UPLOAD_FOLDER}"}, 404
+    else:
+        file.save(file_path)
 
     # Set file permissions
     os.chmod(file_path, 0o660)

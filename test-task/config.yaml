@@ -15,26 +15,8 @@ spec:
       labels:
         app: debug-task-app
     spec:
-      containers:
-        
-        - name: nginx
-          image: nginxinc/nginx-unprivileged:latest
-          ports:
-            - containerPort: 8081
-          volumeMounts:
-            - name: nginx-config
-              mountPath: /etc/nginx/conf.d
-            - name: debug-task
-              mountPath: /app/uploads # the path of the files in the app is in /uploads/ instead of /app/uploads/
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8081
-            initialDelaySeconds: 10
-            periodSeconds: 5
-        
+      containers:       
         - name: app
-          
           # Image has been build under amd64
           # Better to use the versioning system instaed of 'latest' tag. 
           # image: alpacked/test-task 
@@ -62,6 +44,41 @@ spec:
           persistentVolumeClaim:
             claimName: app-storage-pvc
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-app
+  template:
+    metadata:
+      labels:
+        app: nginx-app
+    spec:
+      containers:
+        - name: nginx
+          image: nginxinc/nginx-unprivileged:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -71,28 +88,23 @@ metadata:
 data:
   default.conf: |
     server {
-        listen 8081;
+        listen 80;
 
         # It is beeter to implemet /health as a separate endpoint
         location /health {
             access_log off;   # turn off logs to avoid spam
             
-            proxy_pass http://127.0.0.1:8080/health;
+            proxy_pass http://debug-task-service.default.svc.cluster.local:8080/health;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
         }
 
         location / {
-            proxy_pass http://127.0.0.1:8080;
+            proxy_pass http://debug-task-service.default.svc.cluster.local:8080;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
-
-        # location /uploads {
-        #     return 200;
-        #     root /uploads;
-        # }
     }
 ---
 apiVersion: v1
@@ -104,8 +116,21 @@ spec:
     app: debug-task-app
   ports:
     - protocol: TCP
-      port: 8081
-      targetPort: 8081
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -118,7 +143,7 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: /mnt/uploads # hostPath could not be used in the cluster has more then one node.
+    path: /mnt/uploads # hostPath could not be used in the cluster that has more then one node.
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -131,7 +156,7 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: /mnt/data # hostPath could not be used in the cluster has more then one node.
+    path: /mnt/data # hostPath could not be used in the cluster that has more then one node.
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
