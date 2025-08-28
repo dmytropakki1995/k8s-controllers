@@ -28,17 +28,17 @@ def init_db():
 def health():
     return 'OK', 200
 
-# Route to get the uploaded file
-@app.route('/uploads/<filename>')
-def get_file(filename):
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
+# # Route to get the uploaded file
+# @app.route('/uploads/<filename>')
+# def get_file(filename):
+#     file_path = os.path.join(UPLOAD_FOLDER, filename)
 
-    # Check if the file exists
-    if not os.path.isfile(file_path):
-        return {"Error": f"File {filename} does not exist in {UPLOAD_FOLDER}"}, 404
+#     # Check if the file exists
+#     if not os.path.isfile(file_path):
+#         return {"Error": f"File {filename} does not exist in {UPLOAD_FOLDER}"}, 404
     
-    # Send the file
-    return send_from_directory(UPLOAD_FOLDER, filename)
+#     # Send the file
+#     return send_from_directory(UPLOAD_FOLDER, filename)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -56,7 +56,7 @@ def upload_file():
         file.save(file_path)
 
     # Set file permissions
-    os.chmod(file_path, 0o660)
+    os.chmod(file_path, 0o664)
 
     # Get MIME type
     mime_type = mimetypes.guess_type(file_path)[0] or 'unknown'

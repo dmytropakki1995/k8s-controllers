@@ -68,6 +68,8 @@ spec:
           volumeMounts:
             - name: nginx-config
               mountPath: /etc/nginx/conf.d
+            - name: debug-task
+              mountPath: /uploads
           livenessProbe:
             httpGet:
               path: /health
@@ -78,6 +80,9 @@ spec:
         - name: nginx-config
           configMap:
             name: nginx-config
+        - name: debug-task
+          persistentVolumeClaim:
+            claimName: debug-task-pvc
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -104,6 +109,11 @@ data:
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /uploads {
+            # return 200 # should not be used here. Return 200 response every time even the file does not exist
+            root /;
         }
     }
 ---

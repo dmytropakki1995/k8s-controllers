@@ -1,13 +1,9 @@
 # make sure if minikube is installed
 minikube start
 
-# switch to docker daemon of minikube
-eval $(minikube docker-env)
-
-# Build docker image
-docker build -t alpacked/test-task-build .
-
-# switch back to local docker daemon
+# switch to docker daemon of minikube and build image
+eval $(minikube docker-env) && \
+docker build -t alpacked/test-task-build . && \
 eval $(minikube docker-env -u)
 
 # Deply application
@@ -32,7 +28,10 @@ curl http://localhost/uploads/test.txt
 curl http://localhost/uploads/test_copy.txt
 
 # Make sure that persistent volumes work as expected
-kubectl get pods && kubectl delete pod debug-task-deployment-<pod_id>
+kubectl get pods && \ 
+kubectl delete pod debug-task-deployment-<pod_id> && \
+kubectl delete pod nginx-deployment-<pod_id>
 
 # Check if the file still exists and has the same content
 kubectl exec -it debug-task-deployment-<pod_id> -c app -- cat /app/uploads/test.txt
+kubectl exec -it nginx-deployment-<pod_id> -c nginx -- cat /uploads/test.txt
